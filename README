@@ -1,0 +1,4 @@
+spotbot-go
+
+server which allows loading and simple management of spotify tracks remotely. 
+This project is based on the examples extracted from the library go-spotify from
