@@ -1,27 +1,24 @@
 package main
 
 import (
-	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 
+	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	sp "github.com/op/go-libspotify/spotify"
 )
 
-var (
-	appKeyPath = flag.String("key", "spotify_appkey.key", "path to app.key")
-	username   = flag.String("u", "o.p", "spotify username")
-	password   = flag.String("p", "", "spotify password")
-	remember   = flag.Bool("remember", false, "remember username and password")
-)
-
 func main() {
-	flag.Parse()
-	session := spotify(*username, *password, *appKeyPath, *remember)
+	err := godotenv.Load()
+	if err != nil {
+		println("Couldnt load configuration")
+		return
+	}
+	session := newSession(os.Getenv("USERNAME"), os.Getenv("PASSWORD"), os.Getenv("APP_KEY"))
 	router := httprouter.New()
 	router.GET("/playlists", sessionRequest(session, listPlaylists))
 	router.GET("/player/:action", sessionRequest(session, player))
@@ -98,12 +95,11 @@ func sessionRequest(session *sp.Session, fn func(session *sp.Session, ps httprou
 	}
 }
 
-func spotify(username string, password string, appKeyPath string, remember bool) *sp.Session {
+func newSession(username string, password string, appKeyPath string) *sp.Session {
 	appKey, _ := ioutil.ReadFile(appKeyPath)
 	audio, err := newAudioWriter()
 	if err != nil {
-		panic("NOOOOOOO")
-		//panic(err)
+		panic(err)
 	}
 	session, err := sp.NewSession(&sp.Config{
 		ApplicationKey:   appKey,
@@ -121,7 +117,7 @@ func spotify(username string, password string, appKeyPath string, remember bool)
 		Username: username,
 		Password: password,
 	}
-	if err = session.Login(credentials, remember); err != nil {
+	if err = session.Login(credentials, false); err != nil {
 		log.Fatal(err)
 	}
 	return session
