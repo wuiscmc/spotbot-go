@@ -2,6 +2,13 @@
 
 Server which allows search and loading of tracks from spotify. 
 
+## Dependencies
+
+* Portaudio
+```shell
+brew install portaudio
+```
+
 ## Config
 
 Place a .env file in the same folder as the binary:
